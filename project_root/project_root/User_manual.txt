@@ -1,0 +1,111 @@
+﻿USER MANUAL 
+
+
+1. Software installation:
+* Python 3.10+ and “pip”
+* XAMPP or MySQL Server (for database)
+* Visual Studio Code (or any IDE)
+* Browser (e.g., Chrome or Firefox)
+
+
+2. Set Up the MySQL Database:
+
+
+* Start XAMPP and MySQL
+1. Open XAMPP.
+2. Start “Apache” and “MySQL”.
+
+
+*  In the browser, open localhost/phpmyadmin/ to create the Database.
+
+
+* In ”phpMyAdmin”, use the following query:
+                   Query : CREATE DATABASE cultural_sites_db;
+
+
+* Create Necessary Tables such as “users”, “sites”, “reviews”, “favorites”.
+* Import cultural _sites_db.sql in phpMyAdmin. 
+
+
+3. Python setup:
+
+
+* Install the Python Dependencies using:requirements.txt
+Command : pip install -r requirements.txt
+  
+
+4. Project Structure:
+
+ static/index.html       
+- main.py                
+- Jwt_login.py            
+- cultural_sites_db.sql   
+- insert_sites.sql        
+- Chemnitz.geojson        
+- generate_inserts.py     
+- requirements.txt        
+- User_manual.txt         
+
+5. Running backend: 
+
+
+* Open main.py in VS code IDE , run the following command in the terminal:
+
+
+            Command : python -m uvicorn main:app --reload
+
+
+* By default, FastAPI runs on [http://localhost:8000]
+
+
+6. Accessing frontend:
+
+
+* Open index.html in your browser or go to http://localhost:8000/
+
+
+* You are able to see the login/register page.
+
+
+7. Step by step  working process of the cultural site web application — from Register → Login → Using Features → Logout — for both Admin and Regular Users.
+
+
+* Open the Web App : Visit the URL: http://localhost:8000/ then you’ll see the "login/register page".
+
+
+* Register :
+*  Fill the details like Name, Email and Password. Then Click the “Register” button.
+* Data is sent to the FastAPI backend ("/auth/register").
+* If you're the “first user”, you're registered as an "Admin" automatically.
+* Your account is stored in the “users” table in the database.
+* After Successful registration, you’ll get a message: “User registered successfully”
+* You can now login using your email and password.
+
+
+* Login : 
+* Enter your email and password and click “Login”.
+* Frontend will send your credentials to "/auth/login".
+* If credentials are valid then the server returns a “JWT token”.
+* Token is saved in your browser’s local storage.
+* Your role as either admin or regular user is encoded inside the token.
+* After successful login, the home page will be displayed with buttons with features like center on,  favorites, reviews, update profile, admin dashboard (for admins) and logout. The interactive map and list view of sites is visible.
+
+
+* Main features for all users : 
+*  “Interactive Map” : Placemarks show cultural sites, click to see details like name, tourism or amenity, clickable website link.  
+* “Search and filters” : Filter sites by “Tourism” and “Amenity”. Use a search bar to search by name. Click the “Reset Filters” button to see all sites again. 
+* “Center on” : It uses your browser’s geolocation and asks for permission to access the user’s current location. After approving, it zoom into user’s current location
+* “Favorites” : After clicking “Favorite” on a site to save it to the “⭐ Favorites” table. Click “❌ Unfavorite” to remove and "✔️ Favorites" to view only your favorite sites. 
+* “Reviews” : Click “📝 Review” to add a review and rating (1 to 5). You can edit and delete your review. All reviews are saved in the “reviews” table. Click ""👀 View All Reviews"" to see what others wrote.
+* “Update Profile” : Using this feature, you can change name, email or password by clicking on the “Update” button.
+* “Top Rated Sites” : Click the “Top Rated Sites” button in the sidebar. The top sites based on average rating will be displayed. Each entry shows name of the site, average rating, number of reviews, tourism or amenity types and "View on Map" button
+ 
+* “Show Admin Dashboard” button for admins : 
+* Statistics in pie chart will be displayed with active users, deleted users, total sites, reviews and favorites 
+* List of all active users will be visible with name, email, admin status and "❌ Delete" option for non admin users  
+* List of delete users where admins cannot delete themselves
+
+
+* Logout : 
+* After clicking on “Logout”, the JWT token is removed from the browser.
+* You are returned to the login page.

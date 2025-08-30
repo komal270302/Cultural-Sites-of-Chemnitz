@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cultural Sites Map</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    #map {
+      height: 100vh;
+      width: 70%;
+      float: left;
+      display: none;
+      z-index: 0;
+    }
+    #sidebar {
+      width: 30%;
+      float: right;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 10px;
+      box-sizing: border-box;
+      display: none;
+    }
+    #filters {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      display: none;
+    }
+    #login-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #D4E7C5;
+     
+    }
+    #login {
+      padding: 20px;
+      width: 300px;
+      background-color:#f9f9f9;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    #login-form, #update-form, #admin-panel {
+      padding: 20px;
+      width: 300px;
+      margin: 0 auto;
+    }
+    #update-form {
+      display: none;
+    }
+    #controls {
+      display: none;
+      padding: 10px;
+    }
+    #welcome-message {
+      margin-right: 10px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 5px 5px 5px 0;
+      cursor: pointer;
+    }
+    .site-item {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+    .fav, .review, .delete-btn, .all-reviews {
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    .favorite-highlight {
+      color: green;
+      font-weight: bold;
+    }
+    .user-review {
+      font-size: 0.9em;
+      margin-top: 4px;
+      color: #444;
+    }
+    #search-bar {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    .admin-users {
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    #stats-chart {
+      max-width: 300px;
+      margin: 20px auto;
+    }
+    #legend {
+      position: absolute;
+      bottom: 10px;
+      left: 10px;
+      background: white;
+      padding: 10px;
+      border: 1px solid #ccc;
+      z-index: 1000;
+      display: none;
+    }
+    .user-item {
+      border-bottom: 1px solid #ddd;
+      padding: 5px 0;
+    }
+    .delete-user-btn {
+      color: red;
+      cursor: pointer;
+    }
+    #all-reviews-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      z-index: 1000;
+      max-height: 60vh;
+      overflow-y: auto;
+      width: 400px;
+    }
+    #review-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      z-index: 2000;
+      max-height: 60vh;
+      overflow-y: auto;
+      width: 400px;
+    }
+    .review-item {
+      border-bottom: 1px solid #eee;
+      padding: 5px 0;
+    }
+    #top-rated-btn {
+      background-color: #ffc107;
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+    }
+    #top-rated-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      z-index: 1000;
+      max-height: 60vh;
+      overflow-y: auto;
+      width: 400px;
+    }
+    #top-rated-modal .site-item {
+      background-color: #f8f9fa;
+      border-radius: 5px;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ffc107;
+    }
+    #top-rated-modal .site-item strong {
+      font-size: 1.1em;
+      color: #333;
+    }
+    #top-rated-modal .site-item div {
+      margin: 3px 0;
+      font-size: 0.9em;
+      color: #666;
+    }
+    @media (max-width: 600px) {
+      #login {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="login-page">
+    <div id="login">
+      <h3>Login</h3>
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <button onclick="login()">Login</button>
+      <p style="text-align: center;">or</p>
+      <h3>Register</h3>
+      <input type="text" id="name" placeholder="Name" required>
+      <input type="email" id="reg-email" placeholder="Email" required>
+      <input type="password" id="reg-password" placeholder="Password" required>
+      <button onclick="register()">Register</button>
+    </div>
+  </div>
+
+  <div id="map-page" style="display: none;">
+    <div id="controls">
+      <span id="welcome-message"></span>
+      <button onclick="centerOnUserLocation()">📍 Center on</button>
+      <button onclick="showFavorites()">✔️ Favorites</button>
+      <button onclick="showReviews()">Reviews</button>
+      <button onclick="showUpdateForm()">Update Profile</button>
+      <button id="admin-dashboard-btn" onclick="showAdminStats()" style="display: none;">Show Admin Dashboard</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+
+    <div id="update-form">
+      <h3>Update Profile</h3>
+      <input type="text" id="update-name" placeholder="Name">
+      <input type="email" id="update-email" placeholder="Email">
+      <input type="password" id="update-password" placeholder="New Password">
+      <button onclick="updateProfile()">Update</button>
+      <button onclick="hideUpdateForm()">Cancel</button>
+    </div>
+
+    <div id="review-modal" style="display: none;">
+      <h3>Leave a Review</h3>
+      <textarea id="review-text" placeholder="Your review" style="width: 100%; height: 100px;"></textarea>
+      <input type="number" id="rating" placeholder="Rating (1-5)" min="1" max="5" style="width: 50%; margin-right: 10px;">
+      <button onclick="submitReview()">Submit</button>
+      <button onclick="closeReviewModal()">Cancel</button>
+    </div>
+
+    <div id="all-reviews-modal">
+      <h3>All Reviews</h3>
+      <div id="all-reviews-content"></div>
+      <button onclick="closeAllReviewsModal()">Close</button>
+    </div>
+
+    <div id="filters">
+      <input type="text" id="search-bar" placeholder="Search by name" oninput="applyFilters()">
+      <select id="tourism-filter" onchange="applyFilters()">
+        <option value="">All Tourism</option>
+        <option value="none">None</option>
+      </select>
+      <select id="amenity-filter" onchange="applyFilters()">
+        <option value="none">None</option>
+        <option value="">All Amenities</option>
+      </select>
+      <button onclick="resetFilters()">Reset Filters</button>
+    </div>
+
+    <div id="admin-panel"></div>
+    <div id="map"></div>
+    <div id="sidebar">
+      <button id="top-rated-btn" onclick="showTopRatedSites()">Top Rated Sites</button>
+      <h3>All Sites</h3>
+      <div id="site-list"></div>
+    </div>
+    <div id="legend"></div>
+
+    <div id="top-rated-modal" style="display: none;">
+      <h3>Top Rated Sites</h3>
+      <div id="top-rated-content"></div>
+      <button onclick="closeTopRatedModal()">Close</button>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    let map = null;
+    let markers = [];
+    let markerMap = new Map();
+    let allSites = [];
+    let favorites = [];
+    let reviews = [];
+    let userData = null;
+    let userLocation = null;
+    let statsChart = null;
+
+    function initializeMap() {
+      if (map) map.remove();
+      map = L.map('map').setView([50.8333, 12.9167], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(map);
+      updateLegend();
+    }
+
+    function parseJwt() {
+      const token = localStorage.getItem('token');
+      if (!token) return {};
+      try {
+        return JSON.parse(atob(token.split('.')[1]));
+      } catch (e) {
+        console.error('JWT parsing error:', e);
+        return {};
+      }
+    }
+
+    function isAdmin() {
+      const payload = parseJwt();
+      return payload.is_admin === 1 || payload.is_admin === true;
+    }
+
+    function getToken() {
+      return localStorage.getItem('token');
+    }
+
+    function getColorFromId(id) {
+      const hash = id.toString().split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+      const hue = hash % 360;
+      return `hsl(${hue}, 70%, 50%)`;
+    }
+
+    function centerOnUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            userLocation = { lat: latitude, lon: longitude };
+            map.setView([latitude, longitude], 15);
+            L.marker([latitude, longitude])
+              .addTo(map)
+              .bindPopup('You are here!')
+              .openPopup();
+          },
+          (error) => {
+            console.error('Geolocation error:', error);
+            alert('Unable to access your location. Please allow location access or check your settings.');
+          }
+        );
+      } else {
+        alert('Geolocation is not supported by your browser.');
+      }
+    }
+
+    function displaySites(sites, containerId = 'site-list') {
+      markers.forEach(m => map.removeLayer(m));
+      document.getElementById(containerId).innerHTML = '';
+      markers = [];
+      markerMap.clear();
+
+      sites.forEach(site => {
+        if (site.lat && site.lon) {
+          const color = site.tourism ? getColorForTourism(site.tourism) : 
+                     site.amenity ? getColorForAmenity(site.amenity) : 'blue';
+          const marker = L.circleMarker([site.lat, site.lon], {
+            radius: 8,
+            fillColor: color,
+            color: color,
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          }).addTo(map);
+          const websiteLink = site.website ? `<a href="${site.website}" target="_blank">${site.name}</a>` : site.name;
+          marker.bindPopup(`<strong>${websiteLink}</strong><br>Tourism: ${site.tourism || 'N/A'}<br>Amenity: ${site.amenity || 'N/A'}`);
+          marker.on('click', () => {
+            map.setView([site.lat, site.lon], 15);
+          });
+          markers.push(marker);
+          markerMap.set(site.id || site.site_id, marker);
+
+          const div = document.createElement('div');
+          div.className = 'site-item';
+          const fav = favorites.find(f => f.site_id === (site.id || site.site_id));
+          const review = reviews.find(r => r.site_id === (site.id || site.site_id));
+
+          div.innerHTML = `
+            <strong class="${fav ? 'favorite-highlight' : ''}" onclick="zoomToSite(${site.id || site.site_id})" style="cursor: pointer;">${site.name || 'Unnamed'}</strong><br>
+            ${site.website ? `Website: <a href="${site.website}" target="_blank">${site.website}</a><br>` : ''}
+            Tourism: ${site.tourism || 'N/A'}<br>
+            Amenity: ${site.amenity || 'N/A'}<br>
+            ${site.average_rating ? `Average Rating: ${site.average_rating} (${site.total_reviews} reviews)<br>` : ''}
+            <span class="fav" onclick="${fav ? `deleteFavorite(${fav.favorite_id})` : `addFavorite(${site.id || site.site_id})`}">${fav ? '❌ Unfavorite' : '⭐ Favorite'}</span>
+            <span class="review" onclick="leaveReview(${site.id || site.site_id})">📝 ${review ? 'Edit Review' : 'Review'}</span>
+            ${review ? `<span class="delete-btn" onclick="deleteReview(${review.id})">🗑️ Delete Review</span>` : ''}
+            <span class="all-reviews" onclick="viewAllReviews(${site.id || site.site_id})">👀 View All Reviews</span>
+            ${review ? `<div class="user-review">Your review: <em>${review.text}</em><br>Rating: ⭐ ${review.rating}</div>` : ''}
+          `;
+          document.getElementById(containerId).appendChild(div);
+        }
+      });
+      updateLegend();
+    }
+
+    function zoomToSite(siteId) {
+      const marker = markerMap.get(siteId);
+      if (marker) {
+        map.setView(marker.getLatLng(), 15);
+        marker.openPopup();
+      }
+    }
+
+    function getColorForTourism(tourism) {
+      const colors = {
+        'museum': 'red',
+        'hotel': 'green',
+        'artwork': 'orange',
+        'guest_house': 'black',
+        
+      };
+      return colors[tourism ? tourism.toLowerCase() : ''] || 'blue';
+    }
+
+    function getColorForAmenity(amenity) {
+      const colors = {
+        'theatre': 'purple',
+        'clock': 'orange',
+        'bench': 'yellow ',
+        'restaurant': 'green',
+      };
+      return colors[amenity ? amenity.toLowerCase() : ''] || 'blue';
+    }
+
+    function updateLegend() {
+      const legend = document.getElementById('legend');
+      legend.innerHTML = '';
+      const tourismFilter = document.getElementById('tourism-filter').value;
+      const amenityFilter = document.getElementById('amenity-filter').value;
+      const searchQuery = document.getElementById('search-bar').value;
+
+      if ((tourismFilter === '' && amenityFilter === '') || (tourismFilter === 'none' && amenityFilter === 'none')) {
+        legend.style.display = 'none';
+        return;
+      }
+
+      if (tourismFilter && tourismFilter !== 'none' && tourismFilter !== '') {
+        legend.style.display = 'block';
+        legend.innerHTML = '<strong>Legend (Tourism):</strong><br>';
+        const tourismTypes = [...new Set(allSites.map(s => s.tourism).filter(Boolean))];
+        tourismTypes.forEach(tourism => {
+          const color = getColorForTourism(tourism);
+          legend.innerHTML += `<span style="color: ${color}; margin-right: 10px;">●</span>${tourism}<br>`;
+        });
+      } else if (amenityFilter && amenityFilter !== 'none' && amenityFilter !== '') {
+        legend.style.display = 'block';
+        legend.innerHTML = '<strong>Legend (Amenity):</strong><br>';
+        const amenityTypes = [...new Set(allSites.map(s => s.amenity).filter(Boolean))];
+        amenityTypes.forEach(amenity => {
+          const color = getColorForAmenity(amenity);
+          legend.innerHTML += `<span style="color: ${color}; margin-right: 10px;">●</span>${amenity}<br>`;
+        });
+      } else if (searchQuery) {
+        legend.style.display = 'block';
+        legend.innerHTML = '<strong>Legend:</strong><br><span style="color: green; margin-right: 10px;">●</span>Search Results<br>';
+      } else {
+        legend.style.display = 'none';
+      }
+    }
+
+    async function fetchUserData() {
+      const token = getToken();
+      if (!token) return;
+
+      const userId = parseJwt().sub;
+      try {
+        const [favRes, revRes, siteRes, topRatedRes] = await Promise.all([
+          fetch(`http://localhost:8000/favorites/${userId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('http://localhost:8000/reviews', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('http://localhost:8000/sites'),
+          fetch('http://localhost:8000/sites/top-rated')
+        ]);
+
+        if (!favRes.ok || !revRes.ok || !siteRes.ok || !topRatedRes.ok) {
+          throw new Error('Failed to fetch data');
+        }
+
+        const favData = await favRes.json();
+        const revData = await revRes.json();
+        const siteData = await siteRes.json();
+        const topRatedData = await topRatedRes.json();
+
+        favorites = favData.favorites || [];
+        reviews = revData.reviews.filter(r => r.user_id == userId) || [];
+        allSites = siteData.sites || [];
+        displaySites(allSites);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }
+
+    async function fetchFilterOptions() {
+      try {
+        const response = await fetch('http://localhost:8000/sites');
+        const data = await response.json();
+        const tourismTypes = [...new Set(data.sites.map(site => site.tourism).filter(Boolean))];
+        const amenityTypes = [...new Set(data.sites.map(s => s.amenity).filter(Boolean))];
+
+        const tourismSelect = document.getElementById('tourism-filter');
+        const amenitySelect = document.getElementById('amenity-filter');
+
+        tourismTypes.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type;
+          option.textContent = type;
+          tourismSelect.appendChild(option);
+        });
+
+        amenityTypes.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type;
+          option.textContent = type;
+          amenitySelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
+      }
+    }
+
+    async function applyFilters() {
+      const tourism = document.getElementById('tourism-filter').value;
+      const amenity = document.getElementById('amenity-filter').value;
+      const searchQuery = document.getElementById('search-bar').value.toLowerCase();
+
+      try {
+        let sites = allSites;
+        if (tourism || amenity) {
+          const query = new URLSearchParams();
+          if (tourism && tourism !== 'none') query.append('tourism', tourism);
+          if (amenity && amenity !== 'none') query.append('amenity', amenity);
+          if (tourism === 'none') sites = sites.filter(s => !s.tourism);
+          if (amenity === 'none') sites = sites.filter(s => !s.amenity);
+          if (query.toString()) {
+            const response = await fetch(`http://localhost:8000/sites/filter?${query}`);
+            const data = await response.json();
+            sites = data.filtered_sites || [];
+          }
+        }
+
+        if (searchQuery) {
+          sites = sites.filter(site => site.name && site.name.toLowerCase().includes(searchQuery));
+        }
+
+        displaySites(sites);
+      } catch (error) {
+        console.error('Error applying filters:', error);
+      }
+    }
+
+    function resetFilters() {
+      document.getElementById('tourism-filter').value = '';
+      document.getElementById('amenity-filter').value = '';
+      document.getElementById('search-bar').value = '';
+      displaySites(allSites);
+    }
+
+    async function addFavorite(siteId) {
+      const token = getToken();
+      const userId = parseJwt().sub;
+      try {
+        const response = await fetch('http://localhost:8000/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ user_id: userId, site_id: siteId })
+        });
+        if (response.ok) {
+          await fetchUserData();
+        } else {
+          const errorData = await response.json();
+          alert(errorData.detail || 'Failed to add favorite');
+        }
+      } catch (error) {
+        console.error('Error adding favorite:', error);
+        alert('Failed to add favorite');
+      }
+    }
+
+    async function deleteFavorite(favoriteId) {
+      const token = getToken();
+      try {
+        const response = await fetch(`http://localhost:8000/favorites/${favoriteId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          await fetchUserData();
+        } else {
+          const errorData = await response.json();
+          alert(errorData.detail || 'Failed to delete favorite');
+        }
+      } catch (error) {
+        console.error('Error deleting favorite:', error);
+        alert('Failed to delete favorite');
+      }
+    }
+
+    let currentReviewSiteId = null;
+
+    function leaveReview(siteId) {
+      currentReviewSiteId = siteId;
+      const existingReview = reviews.find(r => r.site_id === siteId);
+      document.getElementById('review-text').value = existingReview ? existingReview.text : '';
+      document.getElementById('rating').value = existingReview ? existingReview.rating : '';
+      document.getElementById('review-modal').style.display = 'block';
+    }
+
+    function closeReviewModal() {
+      document.getElementById('review-modal').style.display = 'none';
+      currentReviewSiteId = null;
+    }
+
+    async function submitReview() {
+      const token = getToken();
+      const userId = parseJwt().sub;
+      const text = document.getElementById('review-text').value;
+      const rating = parseInt(document.getElementById('rating').value);
+
+      if (text && rating && !isNaN(rating) && rating >= 1 && rating <= 5) {
+        try {
+          const existingReview = reviews.find(r => r.site_id === currentReviewSiteId);
+          const url = existingReview
+            ? `http://localhost:8000/reviews/users/${userId}/sites/${currentReviewSiteId}`
+            : 'http://localhost:8000/reviews';
+          const method = existingReview ? 'PUT' : 'POST';
+          const body = existingReview
+            ? { rating, text }
+            : { user_id: userId, site_id: currentReviewSiteId, rating, text };
+
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(body)
+          });
+          if (response.ok) {
+            await fetchUserData();
+            closeReviewModal();
+          } else {
+            const errorData = await response.json();
+            alert(errorData.detail || 'Failed to submit review');
+          }
+        } catch (error) {
+          console.error('Error submitting review:', error);
+          alert('Failed to submit review');
+        }
+      } else {
+        alert('Please provide a valid review and rating (1-5).');
+      }
+    }
+
+    async function deleteReview(reviewId) {
+      const token = getToken();
+      try {
+        const response = await fetch(`http://localhost:8000/reviews/${reviewId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          await fetchUserData();
+        } else {
+          const errorData = await response.json();
+          alert(errorData.detail || 'Failed to delete review');
+        }
+      } catch (error) {
+        console.error('Error deleting review:', error);
+        alert('Failed to delete review');
+      }
+    }
+
+    async function viewAllReviews(siteId) {
+      const token = getToken();
+      try {
+        const response = await fetch(`http://localhost:8000/reviews/site/${siteId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch reviews');
+        }
+        const data = await response.json();
+        const reviews = data.reviews || [];
+        const contentDiv = document.getElementById('all-reviews-content');
+        contentDiv.innerHTML = reviews.length ? reviews.map(r => `
+          <div class="review-item">
+            <strong>${r.user_name}</strong>: ${r.text}<br>
+            Rating: ⭐ ${r.rating}
+          </div>
+        `).join('') : '<p>No reviews available.</p>';
+        document.getElementById('all-reviews-modal').style.display = 'block';
+      } catch (error) {
+        console.error('Error fetching all reviews:', error);
+        alert('Failed to fetch reviews');
+      }
+    }
+
+    function closeAllReviewsModal() {
+      document.getElementById('all-reviews-modal').style.display = 'none';
+    }
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      if (!email || !password) {
+        alert('Please enter email and password');
+        return;
+      }
+      try {
+        const response = await fetch('http://localhost:8000/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (response.ok && data.access_token) {
+          localStorage.setItem('token', data.access_token);
+          document.getElementById('login-page').style.display = 'none';
+          document.getElementById('map-page').style.display = 'block';
+          document.getElementById('map').style.display = 'block';
+          document.getElementById('sidebar').style.display = 'block';
+          document.getElementById('filters').style.display = 'block';
+          document.getElementById('controls').style.display = 'block';
+          if (isAdmin()) {
+            document.getElementById('admin-dashboard-btn').style.display = 'inline-block';
+          }
+          initializeMap();
+          await fetchUserData();
+          await fetchFilterOptions();
+          await fetchCurrentUser();
+        } else {
+          alert(data.detail || 'Login failed');
+        }
+      } catch (error) {
+        console.error('Error during login:', error);
+        alert('Login failed');
+      }
+    }
+
+    async function register() {
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('reg-email').value;
+      const password = document.getElementById('reg-password').value;
+      if (!name || !email || !password) {
+        alert('Please fill in name, email, and password');
+        return;
+      }
+      try {
+        const response = await fetch('http://localhost:8000/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await response.json();
+        alert(data.message || 'Registration failed');
+        if (data.message === 'User registered successfully') {
+          document.getElementById('name').value = '';
+          document.getElementById('reg-email').value = '';
+          document.getElementById('reg-password').value = '';
+        }
+      } catch (error) {
+        console.error('Error during registration:', error);
+        alert('Registration failed');
+      }
+    }
+
+    async function fetchCurrentUser() {
+      const token = getToken();
+      if (!token) return;
+      try {
+        const response = await fetch('http://localhost:8000/auth/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          userData = await response.json();
+          document.getElementById('update-name').value = userData.name || '';
+          document.getElementById('update-email').value = userData.email || '';
+          document.getElementById('welcome-message').textContent = `Welcome, ${userData.name}!`;
+        }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+      }
+    }
+
+  async function updateProfile() {
+    const token = getToken();
+    const userId = parseJwt().sub;
+    const name = document.getElementById('update-name').value;
+    const email = document.getElementById('update-email').value;
+    const password = document.getElementById('update-password').value;
+    const body = {};
+    if (name) body.name = name;
+    if (email) body.email = email;
+    if (password) body.password = password;  // Send as 'password', not 'password_hash'
+
+    if (Object.keys(body).length === 0) {
+      alert('Please provide at least one field to update');
+      return;
+     }
+
+    try {
+      const response = await fetch(`http://localhost:8000/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(body)
+      });
+      const data = await response.json();
+      if (response.ok) {
+        alert(data.message || 'Profile updated successfully');
+        document.getElementById('update-form').style.display = 'none';
+        document.getElementById('update-password').value = '';  // Clear password field
+        await fetchCurrentUser();  // Refresh user data to reflect changes
+      } else {
+        alert(data.detail || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      alert('Failed to update profile');
+    }
+  }
+
+    function showFavorites() {
+      const filteredSites = allSites.filter(site => favorites.some(fav => fav.site_id === site.id));
+      displaySites(filteredSites);
+    }
+
+    function showReviews() {
+      const filteredSites = allSites.filter(site => reviews.some(review => review.site_id === site.id));
+      displaySites(filteredSites);
+    }
+
+    function showUpdateForm() {
+      document.getElementById('update-form').style.display = 'block';
+      document.getElementById('admin-panel').style.display = 'none';
+    }
+
+    function hideUpdateForm() {
+      document.getElementById('update-form').style.display = 'none';
+    }
+
+    function hideAdminPanel() {
+      document.getElementById('admin-panel').style.display = 'none';
+    }
+
+    async function showAdminStats() {
+      const token = getToken();
+      try {
+        const [statsRes, usersRes, deletedUsersRes] = await Promise.all([
+          fetch('http://localhost:8000/auth/admin/stats', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('http://localhost:8000/auth/admin/users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch('http://localhost:8000/auth/admin/deleted_users', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+        ]);
+
+        if (!statsRes.ok || !usersRes.ok || !deletedUsersRes.ok) {
+          throw new Error('Failed to fetch admin data');
+        }
+
+        const stats = await statsRes.json();
+        const users = await usersRes.json();
+        const deletedUsers = await deletedUsersRes.json();
+
+        const div = document.getElementById('admin-panel');
+        div.innerHTML = `
+          <h3>Admin Dashboard</h3>
+          <canvas id="stats-chart"></canvas>
+          <h4>Active Users</h4>
+          <div class="admin-users">
+            ${users.map(user => `
+              <div class="user-item">
+                ID: ${user.id}, Name: ${user.name}, Email: ${user.email}, 
+                Admin: ${user.is_admin ? 'Yes' : 'No'}, 
+                
+                ${!user.is_admin ? `<span class="delete-user-btn" onclick="deactivateUser(${user.id})">❌ Delete</span>` : ''}
+              </div>
+            `).join('')}
+          </div>
+          <h4>Deleted Users</h4>
+          <div class="admin-users">
+            ${deletedUsers.map(user => `
+              <div class="user-item">
+                ID: ${user.id}, Name: ${user.name}, Email: ${user.email}
+              </div>
+            `).join('')}
+          </div>
+          <button onclick="hideAdminPanel()">Close</button>
+        `;
+        div.style.display = 'block';
+        document.getElementById('update-form').style.display = 'none';
+
+        if (statsChart) statsChart.destroy();
+        const ctx = document.getElementById('stats-chart').getContext('2d');
+        statsChart = new Chart(ctx, {
+          type: 'pie',
+          data: {
+            labels: ['Active Users', 'Deleted Users', 'Sites', 'Reviews', 'Favorites'],
+            datasets: [{
+              data: [stats.active_users, stats.deleted_users, stats.sites, stats.reviews, stats.favorites],
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'top' },
+              title: { display: true, text: 'Admin Statistics' }
+            }
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching admin stats:', error);
+        alert('Failed to fetch admin data. Ensure you have admin privileges.');
+      }
+    }
+
+    async function deactivateUser(userId) {
+      const token = getToken();
+      try {
+        const response = await fetch(`http://localhost:8000/auth/admin/deactivate_user/${userId}`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          alert('User deactivated successfully');
+          await showAdminStats();
+        } else {
+          const errorData = await response.json();
+          alert(errorData.detail || 'Failed to deactivate user');
+        }
+      } catch (error) {
+        console.error('Error deactivating user:', error);
+        alert('Failed to deactivate user');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      document.getElementById('map-page').style.display = 'none';
+      document.getElementById('login-page').style.display = 'block';
+      location.reload();
+    }
+
+    async function showTopRatedSites() {
+      const token = getToken();
+      try {
+        const response = await fetch('http://localhost:8000/sites/top-rated', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Failed to fetch top-rated sites');
+        const data = await response.json();
+        const topRatedSites = data.top_rated_sites || [];
+
+        const contentDiv = document.getElementById('top-rated-content');
+        contentDiv.innerHTML = '';
+        if (topRatedSites.length === 0) {
+          contentDiv.innerHTML = '<p>No top-rated sites available.</p>';
+          document.getElementById('top-rated-modal').style.display = 'block';
+          return;
+        }
+        topRatedSites.forEach(site => {
+          const div = document.createElement('div');
+          div.className = 'site-item';
+          const websiteLink = site.website ? `<a href="${site.website}" target="_blank">${site.name}</a>` : site.name;
+          div.innerHTML = `
+            <strong>${websiteLink}</strong>
+            <div>⭐ ${site.average_rating} (${site.total_reviews} reviews)</div>
+            <div>${site.tourism || 'No tourism type'}</div>
+            <div>${site.amenity || 'No amenity type'}</div>
+            <button onclick="zoomToSite(${site.site_id}); closeTopRatedModal();" style="margin-top: 5px;">View on Map</button>
+          `;
+          contentDiv.appendChild(div);
+        });
+        document.getElementById('top-rated-modal').style.display = 'block';
+      } catch (error) {
+        console.error('Error fetching top-rated sites:', error);
+        alert('Failed to load top-rated sites.');
+      }
+    }
+
+    function closeTopRatedModal() {
+      document.getElementById('top-rated-modal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>
