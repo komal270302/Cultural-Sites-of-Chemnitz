@@ -1,9 +1,9 @@
-## Cultural Sites of Chemnitz
+# Cultural Sites of Chemnitz
 
-# Project Overview
+## Project Overview
 This is a web application developed as a term paper project for the course "Datenbanken und Web-Techniken" in the Web Engineering study program at Technische Universität Chemnitz. The application allows users to explore cultural sites in Chemnitz, including museums, restaurants, artworks, and more, displayed on an interactive map. It features user authentication, favorites, reviews, and an admin dashboard. The app fetches cultural site data from OpenStreetMap (via GeoJSON), stores it in a MySQL database, and provides a frontend interface for browsing, filtering, and interacting with the sites.
 
-# Features
+## Features
 - User Authentication: Register and login with JWT-based security. The first registered user becomes an admin.
 - Interactive Map: Displays cultural sites using Leaflet.js, with markers for locations, details on click (name, type, website), and geolocation centering.
 - Search and Filters: Filter sites by tourism/amenity types or search by name.
@@ -14,13 +14,13 @@ This is a web application developed as a term paper project for the course "Date
 - Admin Dashboard: View statistics (active/deleted users, sites, reviews, favorites) in a pie chart, manage users (deactivate/restore), and view deleted users.
 - Data Management: Sites data imported from GeoJSON and stored in the database.
 
-# Technologies Used
+## Technologies Used
 - Backend: Python with FastAPI, MySQL (via mysql-connector-python), JWT for authentication (jose, passlib).
 - Frontend: HTML, CSS, JavaScript, Leaflet.js for maps, Chart.js for admin charts.
 - Database: MySQL (schema includes tables for users, sites, reviews, favorites).
 - Other Tools: GeoJSON for data import, XAMPP/phpMyAdmin for database setup.
 
-# Installation
+## Installation
 1. Prerequisites:
 - Python 3.10+
 - pip (Python package manager)
@@ -29,7 +29,7 @@ This is a web application developed as a term paper project for the course "Date
 - Web Browser (e.g., Chrome or Firefox)
 
 2. Steps:
-Clone the Repository: git clone https://github.com/your-username/cultural-sites-chemnitz.git, cd cultural-sites-chemnitz
+Clone the Repository: git clone https://github.com/komal270302/Cultural-Sites-of-Chemnitz.git, cd Cultural-Sites-of-Chemnitz
 
 3. Set Up the MySQL Database:
 - Start XAMPP and enable Apache/MySQL.
@@ -39,7 +39,7 @@ Clone the Repository: git clone https://github.com/your-username/cultural-sites-
 
 4. Install Python Dependencies : pip install -r requirements.txt
 
-# Usage
+## Usage
 - Run the Backend: Rub python -m uvicorn main:app --reload. The API will be available at http://localhost:8000.
 - Access the Frontend: Open static/index.html in your browser or visit http://localhost:8000/ (served by FastAPI).
 - Register and Login: Register a new user (first user is admin). Login to access features like map, favorites, reviews, and profile updates.
@@ -47,12 +47,12 @@ Clone the Repository: git clone https://github.com/your-username/cultural-sites-
 
 For detailed step-by-step instructions, refer to User_manual.txt.
 
-# API Documentation
+## API Documentation
 The API endpoints are tested on Postman. All of the endpoint documentation is provided in the URL below: https://documenter.getpostman.com/view/44785890/2sB2xBBoue
 
-# Contributors 
+## Contributors 
 - Komal (komal202220@gmail.com)
 - Sneha reddy Sripureddy
 
-Contributors
+## Contributors
 Sneha Reddy Sriyapureddy Komal
